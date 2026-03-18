@@ -1,21 +1,26 @@
+using Unity.VisualScripting;
 using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
+    
     [Header("Movement Settings")]
     public float maxSpeed = 5.0f;
 
-    public Vector2 acceleration = new(40f, 40f);
+    public GameObject bulletPrefab;
+
+    private Vector2 acceleration = new(40f, 40f);
     private Vector2 velocity;
 
-    private float dodgeDelay = 0.5f;
+    public float dodgeDelay = 0.5f;
+    public float shootDelay = 0.1f;
     private float dodgeTimer = 0.5f;
-    private float shootDelay = 0.1f;
     private float shootTimer = 0.1f;
 
     private SpaceShooterInputActions.StandardActions input;
+    private Rigidbody2D rb;
 
 
     void Awake()
@@ -24,13 +29,21 @@ public class Player : MonoBehaviour
         var inputActions = new SpaceShooterInputActions();
         input = inputActions.Standard;
         inputActions.Enable();
+
+        rb = GetComponent<Rigidbody2D>();
     }
 
 
     void Update()
     {
-        HandleMovement();
+        HandleInput();
         LookAt(GetMouseWorldPos());
+    }
+
+
+    void FixedUpdate()
+    {
+        rb.MovePosition(rb.position + velocity * Time.fixedDeltaTime);
     }
 
 
@@ -42,7 +55,7 @@ public class Player : MonoBehaviour
         - Handle Shoot
         - Move the player
     */
-    void HandleMovement()
+    void HandleInput()
     {
         Vector2 inputDir = new(
             input.HorizontalMovement.ReadValue<float>(),
@@ -60,9 +73,6 @@ public class Player : MonoBehaviour
 
         if (dodge) HandleDodge();
         if (shoot) HandleShoot();
-
-        // Move Player
-        transform.position += (Vector3)velocity * Time.deltaTime;
     }
 
 
@@ -87,7 +97,7 @@ public class Player : MonoBehaviour
     {
         var direction = GetPlayerToPosVector(pos).normalized;
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0, 0, angle);
+        rb.MoveRotation(angle);
     }
 
 
@@ -128,6 +138,9 @@ public class Player : MonoBehaviour
         {
             shootTimer = 0.0f;
             Vector2 direction = GetPlayerToPosVector(GetMouseWorldPos()).normalized;
+            GameObject bObj = Instantiate(bulletPrefab);        
+            Bullet bScript = bObj.GetComponent<Bullet>();
+            bScript.Launch(transform.position, direction, 15f, Color.black, gameObject);
         }
     }
 
