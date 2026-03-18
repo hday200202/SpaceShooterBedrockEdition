@@ -3,8 +3,6 @@ using UnityEngine;
 public class Bullet : MonoBehaviour
 {
     private Vector2 direction;
-    private Vector2 start;
-    private readonly float maxDistance = 1000f;
     private float speed;
     private GameObject parent;
 
@@ -15,7 +13,6 @@ public class Bullet : MonoBehaviour
         Color color, 
         GameObject parent
     ) {
-        this.start = start;
         this.parent = parent;
         transform.position = start;
         direction = dir.normalized;
@@ -27,6 +24,11 @@ public class Bullet : MonoBehaviour
 
     void Update()
     {
+        // Destroy bullet if it goes off screen
+        Vector3 viewportPos = Camera.main.WorldToViewportPoint(transform.position);
+        if (viewportPos.x < 0 || viewportPos.x > 1 || viewportPos.y < 0 || viewportPos.y > 1)
+            Destroy(gameObject);
+
         transform.position += (Vector3)(speed * Time.deltaTime * direction);
     }
 

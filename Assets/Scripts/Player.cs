@@ -5,22 +5,33 @@ using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
-    
+    [Header("Bullet Settings")]
+    public GameObject bulletPrefab;
+    public Transform bulletSpawnPoint;
+
     [Header("Movement Settings")]
     public float maxSpeed = 5.0f;
 
-    public GameObject bulletPrefab;
+    [Header("Dodge Settings")]
+    public float dodgeDelay = 0.5f;
+    public float dodgeDuration = 0.3f;
+    public float flashFrequency = 0.1f; // How often to toggle visibility (seconds)
+    public bool invincible = false;
+
+    [Header("Shoot Settings")]
+    public float shootDelay = 0.1f;
 
     private Vector2 acceleration = new(40f, 40f);
     private Vector2 velocity;
 
-    public float dodgeDelay = 0.5f;
-    public float shootDelay = 0.1f;
     private float dodgeTimer = 0.5f;
+    private float dodgeActiveTimer = 0.0f;
     private float shootTimer = 0.1f;
+    private float flashTimer = 0.0f;
 
     private SpaceShooterInputActions.StandardActions input;
     private Rigidbody2D rb;
+    private SpriteRenderer[] spriteRenderers; // Changed to array
 
 
     void Awake()
@@ -31,6 +42,18 @@ public class Player : MonoBehaviour
         inputActions.Enable();
 
         rb = GetComponent<Rigidbody2D>();
+        
+        // Find all SpriteRenderers on this object and children
+        spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+        
+        if (spriteRenderers.Length == 0)
+        {
+            Debug.LogError("No SpriteRenderer found on Player or children!");
+        }
+        else
+        {
+            Debug.Log($"Found {spriteRenderers.Length} SpriteRenderer(s)");
+        }
     }
 
 
@@ -38,6 +61,7 @@ public class Player : MonoBehaviour
     {
         HandleInput();
         LookAt(GetMouseWorldPos());
+        UpdateDodgeVisuals();
     }
 
 
@@ -124,6 +148,53 @@ public class Player : MonoBehaviour
 
             velocity = 2.0f * maxSpeed * velocity.normalized;
             dodgeTimer = 0.0f;
+            
+            // Start invincibility and visual effect
+            invincible = true;
+            dodgeActiveTimer = dodgeDuration;
+            flashTimer = 0.0f;
+            
+            Debug.Log("Dodge triggered! Invincible = " + invincible);
+        }
+    }
+
+
+    /*
+        UpdateDodgeVisuals()
+        - Update flashing visibility and invincibility during dodge
+    */
+    void UpdateDodgeVisuals()
+    {
+        if (dodgeActiveTimer > 0)
+        {
+            dodgeActiveTimer -= Time.deltaTime;
+            flashTimer += Time.deltaTime;
+            
+            // Toggle visibility at flash frequency for all sprite renderers
+            if (spriteRenderers.Length > 0)
+            {
+                // Flash on/off based on timer
+                bool shouldBeVisible = (Mathf.FloorToInt(flashTimer / flashFrequency) % 2) == 0;
+                
+                foreach (var sr in spriteRenderers)
+                {
+                    sr.enabled = shouldBeVisible;
+                }
+            }
+            
+            // End invincibility when dodge duration expires
+            if (dodgeActiveTimer <= 0)
+            {
+                invincible = false;
+                
+                // Ensure all sprites are visible again
+                foreach (var sr in spriteRenderers)
+                {
+                    sr.enabled = true;
+                }
+                
+                Debug.Log("Dodge ended! Invincible = " + invincible);
+            }
         }
     }
 
@@ -138,9 +209,15 @@ public class Player : MonoBehaviour
         {
             shootTimer = 0.0f;
             Vector2 direction = GetPlayerToPosVector(GetMouseWorldPos()).normalized;
-            GameObject bObj = Instantiate(bulletPrefab);        
-            Bullet bScript = bObj.GetComponent<Bullet>();
-            bScript.Launch(transform.position, direction, 15f, Color.black, gameObject);
+            GameObject bulletObj = Instantiate(bulletPrefab);        
+            Bullet bulletScript = bulletObj.GetComponent<Bullet>();
+            bulletScript.Launch(
+                bulletSpawnPoint.position, 
+                direction, 
+                15f, 
+                Color.black,
+                gameObject
+            );
         }
     }
 
