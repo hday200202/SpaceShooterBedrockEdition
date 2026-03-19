@@ -1,7 +1,6 @@
 using UnityEngine;
 
-public class CameraFollow : MonoBehaviour
-{
+public class CameraFollow : MonoBehaviour {
     [Header("Target Settings")]
     public Transform target;    // Object to follow
     public Vector3 offset = new(0, 0, -10f);
@@ -10,8 +9,7 @@ public class CameraFollow : MonoBehaviour
     public float smoothTime = 0.25f;
     private Vector3 currentVelocity = Vector3.zero;
 
-    void LateUpdate()
-    {
+    void LateUpdate() {
         if (target == null) return;
 
         Vector3 targetPosition = target.position + offset;

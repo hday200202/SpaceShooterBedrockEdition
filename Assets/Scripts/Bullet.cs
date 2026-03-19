@@ -1,7 +1,6 @@
 using UnityEngine;
 
-public class Bullet : MonoBehaviour
-{
+public class Bullet : MonoBehaviour {
     private Vector2 direction;
     private float speed;
     private GameObject parent;
@@ -22,8 +21,7 @@ public class Bullet : MonoBehaviour
             spriteRenderer.color = color;
     }
 
-    void Update()
-    {
+    void Update() {
         // Destroy bullet if it goes off screen
         Vector3 viewportPos = Camera.main.WorldToViewportPoint(transform.position);
         if (viewportPos.x < 0 || viewportPos.x > 1 || viewportPos.y < 0 || viewportPos.y > 1)
@@ -32,9 +30,20 @@ public class Bullet : MonoBehaviour
         transform.position += (Vector3)(speed * Time.deltaTime * direction);
     }
 
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.gameObject != parent)
-            Destroy(gameObject);
+    void OnTriggerEnter2D(Collider2D other) {
+        if (other.gameObject == parent) return;
+
+        bool parentIsEnemy = parent != null && parent.GetComponent<Enemy>() != null;
+
+        // Enemy bullets pass through other enemies
+        if (parentIsEnemy && other.GetComponent<Enemy>() != null) return;
+
+        var player = other.GetComponent<Player>();
+        if (player != null) { player.TakeDamage(1); Destroy(gameObject); return; }
+
+        var enemy = other.GetComponent<Enemy>();
+        if (enemy != null) { enemy.TakeDamage(1); Destroy(gameObject); return; }
+
+        Destroy(gameObject);
     }
 }

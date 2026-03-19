@@ -127,6 +127,24 @@ public partial class @SpaceShooterInputActions: IInputActionCollection2, IDispos
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Look"",
+                    ""type"": ""Value"",
+                    ""id"": ""ec57b526-bc4b-410e-8c83-be9b13361bb1"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Block"",
+                    ""type"": ""Button"",
+                    ""id"": ""c4a67275-00b9-4a28-9a9f-6b0368236be3"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -264,17 +282,6 @@ public partial class @SpaceShooterInputActions: IInputActionCollection2, IDispos
                 },
                 {
                     ""name"": """",
-                    ""id"": ""48edea87-a63d-4424-b22c-2be3004caaae"",
-                    ""path"": ""<Keyboard>/space"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Shoot"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""ef2f7366-190b-4fd1-9130-7bcd40fd27e1"",
                     ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
@@ -294,6 +301,39 @@ public partial class @SpaceShooterInputActions: IInputActionCollection2, IDispos
                     ""action"": ""Dodge"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f57963d9-4dc1-4144-95e0-1613ecff138d"",
+                    ""path"": ""<Gamepad>/rightStick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Look"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7f9e8103-4deb-426a-825b-cb43a2f7fd4a"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Block"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f2cc770c-ba74-4792-833c-464db4a5bb57"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Block"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -306,6 +346,8 @@ public partial class @SpaceShooterInputActions: IInputActionCollection2, IDispos
         m_Standard_HorizontalMovement = m_Standard.FindAction("HorizontalMovement", throwIfNotFound: true);
         m_Standard_Shoot = m_Standard.FindAction("Shoot", throwIfNotFound: true);
         m_Standard_Dodge = m_Standard.FindAction("Dodge", throwIfNotFound: true);
+        m_Standard_Look = m_Standard.FindAction("Look", throwIfNotFound: true);
+        m_Standard_Block = m_Standard.FindAction("Block", throwIfNotFound: true);
     }
 
     ~@SpaceShooterInputActions()
@@ -390,6 +432,8 @@ public partial class @SpaceShooterInputActions: IInputActionCollection2, IDispos
     private readonly InputAction m_Standard_HorizontalMovement;
     private readonly InputAction m_Standard_Shoot;
     private readonly InputAction m_Standard_Dodge;
+    private readonly InputAction m_Standard_Look;
+    private readonly InputAction m_Standard_Block;
     /// <summary>
     /// Provides access to input actions defined in input action map "Standard".
     /// </summary>
@@ -417,6 +461,14 @@ public partial class @SpaceShooterInputActions: IInputActionCollection2, IDispos
         /// Provides access to the underlying input action "Standard/Dodge".
         /// </summary>
         public InputAction @Dodge => m_Wrapper.m_Standard_Dodge;
+        /// <summary>
+        /// Provides access to the underlying input action "Standard/Look".
+        /// </summary>
+        public InputAction @Look => m_Wrapper.m_Standard_Look;
+        /// <summary>
+        /// Provides access to the underlying input action "Standard/Block".
+        /// </summary>
+        public InputAction @Block => m_Wrapper.m_Standard_Block;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -455,6 +507,12 @@ public partial class @SpaceShooterInputActions: IInputActionCollection2, IDispos
             @Dodge.started += instance.OnDodge;
             @Dodge.performed += instance.OnDodge;
             @Dodge.canceled += instance.OnDodge;
+            @Look.started += instance.OnLook;
+            @Look.performed += instance.OnLook;
+            @Look.canceled += instance.OnLook;
+            @Block.started += instance.OnBlock;
+            @Block.performed += instance.OnBlock;
+            @Block.canceled += instance.OnBlock;
         }
 
         /// <summary>
@@ -478,6 +536,12 @@ public partial class @SpaceShooterInputActions: IInputActionCollection2, IDispos
             @Dodge.started -= instance.OnDodge;
             @Dodge.performed -= instance.OnDodge;
             @Dodge.canceled -= instance.OnDodge;
+            @Look.started -= instance.OnLook;
+            @Look.performed -= instance.OnLook;
+            @Look.canceled -= instance.OnLook;
+            @Block.started -= instance.OnBlock;
+            @Block.performed -= instance.OnBlock;
+            @Block.canceled -= instance.OnBlock;
         }
 
         /// <summary>
@@ -546,5 +610,19 @@ public partial class @SpaceShooterInputActions: IInputActionCollection2, IDispos
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnDodge(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Look" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnLook(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Block" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnBlock(InputAction.CallbackContext context);
     }
 }
