@@ -26,6 +26,7 @@ public class Player : MonoBehaviour {
     [Header("Health / Stamina")]
         public int health = 3;
         public int stamina = 3;
+        public SpriteRenderer bodySprite;
 
     // Private Members
     private Vector2 velocity;
@@ -60,6 +61,17 @@ public class Player : MonoBehaviour {
         UpdateLookDirection();
         ApplyLookRotation();
         UpdateDodgeVisuals();
+        UpdateBodyColor();
+    }
+    void UpdateBodyColor()
+    {
+        if (bodySprite == null) return;
+        bodySprite.color = health switch
+        {
+            >= 3 => Color.green,
+            2 => Color.yellow,
+            _ => Color.red
+        };
     }
 
 
@@ -194,7 +206,6 @@ public class Player : MonoBehaviour {
         if (health <= 0) Destroy(gameObject);
     }
 
-
     /*
         HandleShoot()
         - Handle the player's shoot functionality
@@ -213,7 +224,7 @@ public class Player : MonoBehaviour {
             );
         }
     }
-
+   
 
     /*
         HandleAccel()
