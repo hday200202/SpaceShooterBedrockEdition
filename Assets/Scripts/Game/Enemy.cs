@@ -20,6 +20,7 @@ public class Enemy : MonoBehaviour {
         public SpriteRenderer bodySprite;
 
     [Header("AI Settings")]
+        public float awarenessRange = 50f;
         public float engageRange = 8f;
         public float preferredRange = 5f;
         public float strafeChangeInterval = 1.5f;
@@ -66,6 +67,11 @@ public class Enemy : MonoBehaviour {
 
         shootTimer += Time.deltaTime;
 
+        if (!CanSeeTarget()) {
+            HandleAccel(Vector2.zero);
+            return;
+        }
+
         UpdateLookDirection();
         ApplyLookRotation();
         HandleAI();
@@ -74,6 +80,26 @@ public class Enemy : MonoBehaviour {
 
     void FixedUpdate() {
         rigidBody.MovePosition(rigidBody.position + velocity * Time.fixedDeltaTime);
+    }
+
+
+    bool CanSeeTarget() {
+        Vector2 toTarget = (Vector2)target.position - (Vector2)transform.position;
+        float dist = toTarget.magnitude;
+
+        if (dist > awarenessRange) return false;
+
+        var col = GetComponent<Collider2D>();
+        col.enabled = false;
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, toTarget.normalized, dist);
+        col.enabled = true;
+
+        if (hit.collider != null
+            && hit.collider.transform != target
+            && hit.collider.GetComponent<PlayerShield>() == null)
+            return false;
+
+        return true;
     }
 
 
@@ -190,6 +216,9 @@ public class Enemy : MonoBehaviour {
         Show aggro range in editor
     */
     void OnDrawGizmosSelected() {
+        Gizmos.color = Color.white;
+        Gizmos.DrawWireSphere(transform.position, awarenessRange);
+
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, engageRange);
 

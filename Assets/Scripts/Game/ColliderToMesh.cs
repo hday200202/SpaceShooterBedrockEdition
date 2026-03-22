@@ -17,4 +17,8 @@ public class MapRenderer : MonoBehaviour {
 
         meshFilter.sharedMesh = mesh;
     }
+
+    void OnDrawGizmosSelected() {
+        GenerateMapMesh();
+    }
 }
