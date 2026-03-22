@@ -12,10 +12,21 @@ public class Bullet : MonoBehaviour {
     private float speed;
     private GameObject parent;
     private Collider2D col;
+    private bool bounce;
+    private int bouncesRemaining;
 
 
-    public void Launch(Vector2 start, Vector2 dir, float speed, Color color, GameObject parent) {
+    public void Launch(
+        Vector2 start, 
+        Vector2 dir, 
+        float speed, 
+        Color color, 
+        GameObject parent,
+        bool bounce = false
+    ) {
         this.parent = parent;
+        this.bounce = bounce;
+        this.bouncesRemaining = 2;
         transform.position = start;
         direction = dir.normalized;
         this.speed = speed;
@@ -49,7 +60,14 @@ public class Bullet : MonoBehaviour {
         if (hit.collider != null
             && hit.collider.GetComponent<Player>() == null
             && hit.collider.GetComponent<Enemy>() == null
-            && hit.collider.GetComponent<PlayerShield>() == null) {
+            && hit.collider.GetComponent<PlayerShield>() == null
+            && hit.collider.GetComponent<Bullet>() == null) {
+            if (bounce && bouncesRemaining > 0) {
+                bouncesRemaining--;
+                direction = Vector2.Reflect(direction, hit.normal);
+                transform.position = hit.point + hit.normal * 0.01f;
+                return true;
+            }
             AudioSource.PlayClipAtPoint(sfxHit, hit.point);
             Destroy(gameObject);
             return true;
@@ -80,9 +98,15 @@ public class Bullet : MonoBehaviour {
         var playerShield = other.GetComponent<PlayerShield>();
         if (playerShield == null) return false;
 
+        // Player's own bullets pass through the shield
+        if (parent != null && parent.GetComponent<Player>() != null) return false;
+
         PlayerShield.hitCount++;
-        AudioSource.PlayClipAtPoint(sfxHit, transform.position);
-        Destroy(gameObject);
+
+        Vector2 normal = ((Vector2)(transform.position - other.transform.position)).normalized;
+        direction = Vector2.Reflect(direction, normal);
+        transform.position += (Vector3)(normal * 0.1f);
+        parent = other.gameObject;
         return true;
     }
 
