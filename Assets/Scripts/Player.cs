@@ -1,7 +1,9 @@
+using System;
 using Unity.VisualScripting;
 using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.U2D;
 
 public class Player : MonoBehaviour {
     // Public Members
@@ -13,6 +15,7 @@ public class Player : MonoBehaviour {
         public float maxSpeed = 5.0f;
         public Vector2 acceleration = new(40f, 40f);
         public float rotationSpeed = 1500f;
+        public Vector2 velocity;
 
     [Header("Dodge Settings")]
         public float dodgeDelay = 0.5f;
@@ -28,9 +31,17 @@ public class Player : MonoBehaviour {
         public int stamina = 3;
         public SpriteRenderer bodySprite;
 
-    // Private Members
-    private Vector2 velocity;
+    [Header("Shield")]
+        public SpriteShapeRenderer shieldSprite;
+        public PolygonCollider2D shieldCollider;
 
+    [Header("Audio")]
+        public AudioClip sfxExplosion;
+
+    [Header("Effects")]
+        public GameObject explosionPrefab;
+
+    // Private Members
     private float dodgeTimer = 0.5f;
     private float dodgeActiveTimer = 0.0f;
     private float shootTimer = 0.1f;
@@ -44,6 +55,8 @@ public class Player : MonoBehaviour {
     private SpaceShooterInputActions.StandardActions input;
     private Rigidbody2D rigidBody;
     private SpriteRenderer[] spriteRenderers;
+    private PlayerShield shield;
+    private AudioSource audioSource;
 
 
     void Awake() {
@@ -53,6 +66,9 @@ public class Player : MonoBehaviour {
 
         rigidBody = GetComponent<Rigidbody2D>();
         spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+        shield = GetComponentInChildren<PlayerShield>();
+
+        audioSource = GetComponent<AudioSource>();
     }
 
 
@@ -61,17 +77,15 @@ public class Player : MonoBehaviour {
         UpdateLookDirection();
         ApplyLookRotation();
         UpdateDodgeVisuals();
-        UpdateBodyColor();
+        CheckShield();
     }
-    void UpdateBodyColor()
-    {
-        if (bodySprite == null) return;
-        bodySprite.color = health switch
-        {
-            >= 3 => Color.green,
-            2 => Color.yellow,
-            _ => Color.red
-        };
+
+    void CheckShield() {
+        if (PlayerShield.hitCount > 0) {
+            stamina = Math.Max(0, stamina - PlayerShield.hitCount);
+            PlayerShield.hitCount = 0;
+            print($"Stamina: {stamina}");
+        }
     }
 
 
@@ -96,15 +110,23 @@ public class Player : MonoBehaviour {
 
         bool shoot = input.Shoot.WasPressedThisFrame();
         bool dodge = input.Dodge.WasPressedThisFrame();
-        bool block = input.Block.WasPressedThisFrame();
+        bool block = input.Block.IsPressed();
 
         dodgeTimer += Time.deltaTime;
         shootTimer += Time.deltaTime;
 
         HandleAccel(inputDir);
 
+        if (block && stamina > 0) {
+            shieldSprite.enabled = true;
+            shieldCollider.enabled = true;
+        }
+        else { 
+            shieldSprite.enabled = false;
+            shieldCollider.enabled = false;
+        }
         if (dodge) HandleDodge();
-        if (shoot && !dodge) HandleShoot();
+        if (shoot && !dodge && !block) HandleShoot();
     }
 
 
@@ -141,6 +163,8 @@ public class Player : MonoBehaviour {
         rigidBody.MoveRotation(newAngle);
     }
 
+
+    void HandleBlock() { shieldSprite.enabled = true; }
 
     /*
         HandleDodge()
@@ -203,7 +227,15 @@ public class Player : MonoBehaviour {
     public void TakeDamage(int damage) {
         if (invincible) return;
         health -= damage;
-        if (health <= 0) Destroy(gameObject);
+        if (health <= 0) {
+            AudioSource.PlayClipAtPoint(sfxExplosion, transform.position);
+            Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+            Destroy(gameObject);
+        }
+    }
+
+    public void UseStamina(int amount) {
+        stamina -= stamina;
     }
 
     /*

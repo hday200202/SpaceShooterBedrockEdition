@@ -8,7 +8,6 @@ public class MapRenderer : MonoBehaviour {
 
     // This runs automatically whenever you move a point on the collider
     void OnValidate() { GenerateMapMesh(); }
-
     void Start() { GenerateMapMesh(); }
 
     public void GenerateMapMesh() {

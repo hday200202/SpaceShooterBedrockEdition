@@ -10,6 +10,7 @@ public class Enemy : MonoBehaviour {
         public float maxSpeed = 4.0f;
         public Vector2 acceleration = new(30f, 30f);
         public float rotationSpeed = 1000f;
+        public Vector2 velocity;
 
     [Header("Shoot Settings")]
         public float shootDelay = 0.5f;
@@ -23,8 +24,13 @@ public class Enemy : MonoBehaviour {
         public float preferredRange = 5f;
         public float strafeChangeInterval = 1.5f;
 
+    [Header("Audio")]
+        public AudioClip sfxExplosion;
+
+    [Header("Effects")]
+        public GameObject explosionPrefab;
+
     // Private Members
-    private Vector2 velocity;
     private float shootTimer;
     private float strafeDir = 1f;
     private float strafeTimer;
@@ -126,7 +132,11 @@ public class Enemy : MonoBehaviour {
 
     public void TakeDamage(int damage) {
         hp -= damage;
-        if (hp <= 0) Destroy(gameObject);
+        if (hp <= 0) {
+            AudioSource.PlayClipAtPoint(sfxExplosion, transform.position);
+            Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+            Destroy(gameObject);
+        }
         else UpdateBodyColor();
     }
 
@@ -173,5 +183,16 @@ public class Enemy : MonoBehaviour {
             velocity.x = Mathf.MoveTowards(velocity.x, 0f, decelX);
             velocity.y = Mathf.MoveTowards(velocity.y, 0f, decelY);
         }
+    }
+
+    /*
+        Show aggro range in editor
+    */
+    void OnDrawGizmosSelected() {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, engageRange);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, preferredRange);
     }
 }

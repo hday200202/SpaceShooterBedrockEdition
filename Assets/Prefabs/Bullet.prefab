@@ -141,3 +141,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14bff010a609d1054bc3ecf5547f39dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bullet
+  sfxFire: {fileID: 8300000, guid: b9ea7f74cc62a4d17bf669c4020664f7, type: 3}
+  sfxHit: {fileID: 8300000, guid: e347945cc6d16b01ebe5532c9aa42ccb, type: 3}

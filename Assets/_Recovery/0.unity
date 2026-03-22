@@ -402,8 +402,6 @@ MonoBehaviour:
   engageRange: 8
   preferredRange: 5
   strafeChangeInterval: 1.5
-  sfxExplosion: {fileID: 8300000, guid: b8d442080ab57ff6490b3df445523a76, type: 3}
-  explosionPrefab: {fileID: 2389839645703596403, guid: 043daf67e4940445e8605916bc1f9bb0, type: 3}
 --- !u!50 &168395138
 Rigidbody2D:
   serializedVersion: 5
@@ -1401,85 +1399,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!1 &564505413
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 564505416}
-  - component: {fileID: 564505415}
-  - component: {fileID: 564505414}
-  m_Layer: 0
-  m_Name: EventSystem
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &564505414
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 564505413}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 01614664b831546d2ae94a42149d80ac, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.UI.InputSystemUIInputModule
-  m_SendPointerHoverToParent: 1
-  m_MoveRepeatDelay: 0.5
-  m_MoveRepeatRate: 0.1
-  m_XRTrackingOrigin: {fileID: 0}
-  m_ActionsAsset: {fileID: -944628639613478452, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_PointAction: {fileID: -1654692200621890270, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_MoveAction: {fileID: -8784545083839296357, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_SubmitAction: {fileID: 392368643174621059, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_CancelAction: {fileID: 7727032971491509709, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_LeftClickAction: {fileID: 3001919216989983466, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_MiddleClickAction: {fileID: -2185481485913320682, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_RightClickAction: {fileID: -4090225696740746782, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_ScrollWheelAction: {fileID: 6240969308177333660, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_TrackedDevicePositionAction: {fileID: 6564999863303420839, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_TrackedDeviceOrientationAction: {fileID: 7970375526676320489, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_DeselectOnBackgroundClick: 1
-  m_PointerBehavior: 0
-  m_CursorLockBehavior: 0
-  m_ScrollDeltaPerTick: 6
---- !u!114 &564505415
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 564505413}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.EventSystems.EventSystem
-  m_FirstSelected: {fileID: 0}
-  m_sendNavigationEvents: 1
-  m_DragThreshold: 10
---- !u!4 &564505416
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 564505413}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &579625345
 GameObject:
   m_ObjectHideFlags: 0
@@ -1795,9 +1714,9 @@ MonoBehaviour:
     m_IsOpenEnded: 1
     m_ControlPoints:
     - position: {x: -2, y: 0, z: 0}
-      leftTangent: {x: 0, y: 0, z: 0}
-      rightTangent: {x: 0, y: 0, z: 0}
-      mode: 0
+      leftTangent: {x: -0.9738884, y: -0.9367374, z: -0}
+      rightTangent: {x: 0.8658923, y: 0.83286107, z: 0}
+      mode: 1
       height: 1
       spriteIndex: 0
       corner: 1
@@ -1811,9 +1730,9 @@ MonoBehaviour:
       corner: 1
       m_CornerMode: 1
     - position: {x: 2, y: 0, z: 0}
-      leftTangent: {x: 0, y: 0, z: 0}
-      rightTangent: {x: 0, y: 0, z: 0}
-      mode: 0
+      leftTangent: {x: -0.78340197, y: 0.751823, z: 0}
+      rightTangent: {x: 0.6651766, y: -0.6383633, z: -0}
+      mode: 1
       height: 1
       spriteIndex: 0
       corner: 1
@@ -1916,8 +1835,8 @@ SpriteShapeRenderer:
   - {fileID: 21300000, guid: 608e61deb05c54660bebf5a4dd2ee02d, type: 3}
   - {fileID: 21300000, guid: 608e61deb05c54660bebf5a4dd2ee02d, type: 3}
   m_LocalAABB:
-    m_Center: {x: -0.0011942387, y: 0.69978255, z: 0}
-    m_Extent: {x: 2.3492393, y: 1.0502161, z: 0}
+    m_Center: {x: -0.0005147457, y: 0.6963398, z: 0}
+    m_Extent: {x: 2.3502307, y: 1.0536557, z: 0}
   m_SpriteSortPoint: 0
 --- !u!1 &906081130
 GameObject:
@@ -1980,8 +1899,6 @@ MonoBehaviour:
   engageRange: 8
   preferredRange: 5
   strafeChangeInterval: 1.5
-  sfxExplosion: {fileID: 8300000, guid: b8d442080ab57ff6490b3df445523a76, type: 3}
-  explosionPrefab: {fileID: 2389839645703596403, guid: 043daf67e4940445e8605916bc1f9bb0, type: 3}
 --- !u!50 &906081133
 Rigidbody2D:
   serializedVersion: 5
@@ -2288,8 +2205,6 @@ MonoBehaviour:
   engageRange: 8
   preferredRange: 5
   strafeChangeInterval: 1.5
-  sfxExplosion: {fileID: 8300000, guid: b8d442080ab57ff6490b3df445523a76, type: 3}
-  explosionPrefab: {fileID: 2389839645703596403, guid: 043daf67e4940445e8605916bc1f9bb0, type: 3}
 --- !u!1 &1099560802
 GameObject:
   m_ObjectHideFlags: 0
@@ -2351,8 +2266,6 @@ MonoBehaviour:
   engageRange: 8
   preferredRange: 5
   strafeChangeInterval: 1.5
-  sfxExplosion: {fileID: 8300000, guid: b8d442080ab57ff6490b3df445523a76, type: 3}
-  explosionPrefab: {fileID: 2389839645703596403, guid: 043daf67e4940445e8605916bc1f9bb0, type: 3}
 --- !u!50 &1099560805
 Rigidbody2D:
   serializedVersion: 5
@@ -2582,8 +2495,6 @@ MonoBehaviour:
   engageRange: 8
   preferredRange: 5
   strafeChangeInterval: 1.5
-  sfxExplosion: {fileID: 8300000, guid: b8d442080ab57ff6490b3df445523a76, type: 3}
-  explosionPrefab: {fileID: 2389839645703596403, guid: 043daf67e4940445e8605916bc1f9bb0, type: 3}
 --- !u!50 &1145879227
 Rigidbody2D:
   serializedVersion: 5
@@ -2722,8 +2633,6 @@ MonoBehaviour:
   engageRange: 8
   preferredRange: 5
   strafeChangeInterval: 1.5
-  sfxExplosion: {fileID: 8300000, guid: b8d442080ab57ff6490b3df445523a76, type: 3}
-  explosionPrefab: {fileID: 2389839645703596403, guid: 043daf67e4940445e8605916bc1f9bb0, type: 3}
 --- !u!50 &1278194798
 Rigidbody2D:
   serializedVersion: 5
@@ -3226,8 +3135,6 @@ MonoBehaviour:
   engageRange: 8
   preferredRange: 5
   strafeChangeInterval: 1.5
-  sfxExplosion: {fileID: 8300000, guid: b8d442080ab57ff6490b3df445523a76, type: 3}
-  explosionPrefab: {fileID: 2389839645703596403, guid: 043daf67e4940445e8605916bc1f9bb0, type: 3}
 --- !u!50 &1681533187
 Rigidbody2D:
   serializedVersion: 5
@@ -3317,7 +3224,6 @@ GameObject:
   - component: {fileID: 1734399483}
   - component: {fileID: 1734399486}
   - component: {fileID: 1734399485}
-  - component: {fileID: 1734399487}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -3416,7 +3322,10 @@ MonoBehaviour:
   dodgeDistance: 5
   invincible: 0
   shootDelay: 0.1
-  hp: 3
+  health: 3
+  stamina: 3
+  shieldSprite: {fileID: 758346234}
+  shieldCollider: {fileID: 485550228}
 --- !u!50 &1734399486
 Rigidbody2D:
   serializedVersion: 5
@@ -3444,18 +3353,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 0
---- !u!114 &1734399487
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1734399482}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16d29755186f38f6885fff0f04cd841e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Explode
 --- !u!1 &1787228162
 GameObject:
   m_ObjectHideFlags: 0
@@ -3699,8 +3596,6 @@ MonoBehaviour:
   engageRange: 8
   preferredRange: 5
   strafeChangeInterval: 1.5
-  sfxExplosion: {fileID: 8300000, guid: b8d442080ab57ff6490b3df445523a76, type: 3}
-  explosionPrefab: {fileID: 2389839645703596403, guid: 043daf67e4940445e8605916bc1f9bb0, type: 3}
 --- !u!50 &1806410630
 Rigidbody2D:
   serializedVersion: 5
@@ -3839,8 +3734,6 @@ MonoBehaviour:
   engageRange: 8
   preferredRange: 5
   strafeChangeInterval: 1.5
-  sfxExplosion: {fileID: 8300000, guid: b8d442080ab57ff6490b3df445523a76, type: 3}
-  explosionPrefab: {fileID: 2389839645703596403, guid: 043daf67e4940445e8605916bc1f9bb0, type: 3}
 --- !u!50 &1836115392
 Rigidbody2D:
   serializedVersion: 5
@@ -4291,4 +4184,3 @@ SceneRoots:
   - {fileID: 1734399484}
   - {fileID: 334984747}
   - {fileID: 79338189}
-  - {fileID: 564505416}
