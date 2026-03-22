@@ -3412,11 +3412,20 @@ MonoBehaviour:
   rotationSpeed: 1500
   velocity: {x: 0, y: 0}
   dodgeDelay: 0.5
-  dodgeDuration: 0.3
+  dodgeDuration: 0.1
   dodgeDistance: 5
   invincible: 0
+  afterimageCount: 12
+  afterimageFadeDuration: 0.2
   shootDelay: 0.1
-  hp: 3
+  health: 3
+  stamina: 3
+  staminaRefillDelay: 1
+  bodySprite: {fileID: 1805526191}
+  shieldSprite: {fileID: 758346234}
+  shieldCollider: {fileID: 485550228}
+  sfxExplosion: {fileID: 8300000, guid: b8d442080ab57ff6490b3df445523a76, type: 3}
+  explosionPrefab: {fileID: 2389839645703596403, guid: 043daf67e4940445e8605916bc1f9bb0, type: 3}
 --- !u!50 &1734399486
 Rigidbody2D:
   serializedVersion: 5

@@ -1,9 +1,11 @@
 using UnityEngine;
 
 public class Explode : MonoBehaviour {
-    void Awake() {
-        var ps = GetComponent<ParticleSystem>();
-        var main = ps.main;
-        main.stopAction = ParticleSystemStopAction.Destroy;
+    public float lifetime = 3f;
+
+    void Start() {
+        var ps = GetComponentInChildren<ParticleSystem>();
+        if (ps == null) return;
+        Destroy(gameObject, lifetime);
     }
 }

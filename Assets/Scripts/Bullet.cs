@@ -11,7 +11,6 @@ public class Bullet : MonoBehaviour {
     private GameObject parent;
     private float knockBack = 10;
 
-    private AudioSource audioSource;
 
     public void Launch(
         Vector2 start, 

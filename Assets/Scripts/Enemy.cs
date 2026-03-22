@@ -134,7 +134,8 @@ public class Enemy : MonoBehaviour {
         hp -= damage;
         if (hp <= 0) {
             AudioSource.PlayClipAtPoint(sfxExplosion, transform.position);
-            Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+            var explosion = Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+            Destroy(explosion, 3f);
             Destroy(gameObject);
         }
         else UpdateBodyColor();
@@ -159,7 +160,7 @@ public class Enemy : MonoBehaviour {
             bulletScript.Launch(
                 bulletSpawnPoint.position,
                 lookDirection,
-                12f,
+                30f,
                 bulletColor,
                 gameObject
             );

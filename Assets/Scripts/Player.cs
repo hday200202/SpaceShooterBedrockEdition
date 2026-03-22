@@ -1,12 +1,9 @@
 using System;
-using Unity.VisualScripting;
-using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.U2D;
 
 public class Player : MonoBehaviour {
-    // Public Members
     [Header("Bullet Settings")]
         public GameObject bulletPrefab;
         public Transform bulletSpawnPoint;
@@ -22,6 +19,8 @@ public class Player : MonoBehaviour {
         public float dodgeDuration = 0.3f;
         public float dodgeDistance = 3.0f;
         public bool invincible = false;
+        public int afterimageCount = 6;
+        public float afterimageFadeDuration = 1.5f;
 
     [Header("Shoot Settings")]
         public float shootDelay = 0.1f;
@@ -29,6 +28,7 @@ public class Player : MonoBehaviour {
     [Header("Health / Stamina")]
         public int health = 3;
         public int stamina = 3;
+        public float staminaRefillDelay = 1.0f;
         public SpriteRenderer bodySprite;
 
     [Header("Shield")]
@@ -41,9 +41,9 @@ public class Player : MonoBehaviour {
     [Header("Effects")]
         public GameObject explosionPrefab;
 
-    // Private Members
     private float dodgeTimer = 0.5f;
     private float dodgeActiveTimer = 0.0f;
+    private float staminaRefillTimer = 0.0f;
     private float shootTimer = 0.1f;
     private Vector2 preDodgeVelocity;
     private Vector2 dodgeDir;
@@ -51,6 +51,7 @@ public class Player : MonoBehaviour {
     private float dodgeSafeDist;
 
     private Vector2 lookDirection = Vector2.right;
+    private readonly System.Collections.Generic.List<GameObject> afterimages = new();
 
     private SpaceShooterInputActions.StandardActions input;
     private Rigidbody2D rigidBody;
@@ -67,27 +68,17 @@ public class Player : MonoBehaviour {
         rigidBody = GetComponent<Rigidbody2D>();
         spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
         shield = GetComponentInChildren<PlayerShield>();
-
         audioSource = GetComponent<AudioSource>();
     }
-
 
     void Update() {
         HandleInput();
         UpdateLookDirection();
         ApplyLookRotation();
-        UpdateDodgeVisuals();
+        UpdateDodge();
         CheckShield();
+        RefillStamina();
     }
-
-    void CheckShield() {
-        if (PlayerShield.hitCount > 0) {
-            stamina = Math.Max(0, stamina - PlayerShield.hitCount);
-            PlayerShield.hitCount = 0;
-            print($"Stamina: {stamina}");
-        }
-    }
-
 
     void FixedUpdate() {
         rigidBody.MovePosition(rigidBody.position + velocity * Time.fixedDeltaTime);
@@ -116,16 +107,9 @@ public class Player : MonoBehaviour {
         shootTimer += Time.deltaTime;
 
         HandleAccel(inputDir);
+        HandleBlock(block);
 
-        if (block && stamina > 0) {
-            shieldSprite.enabled = true;
-            shieldCollider.enabled = true;
-        }
-        else { 
-            shieldSprite.enabled = false;
-            shieldCollider.enabled = false;
-        }
-        if (dodge) HandleDodge();
+        if (dodge && stamina > 0 && !block) HandleDodge();
         if (shoot && !dodge && !block) HandleShoot();
     }
 
@@ -151,7 +135,6 @@ public class Player : MonoBehaviour {
         }
     }
 
-
     /*
         ApplyLookRotation()
         - Rotate the player to face the current look direction.
@@ -163,100 +146,6 @@ public class Player : MonoBehaviour {
         rigidBody.MoveRotation(newAngle);
     }
 
-
-    void HandleBlock() { shieldSprite.enabled = true; }
-
-    /*
-        HandleDodge()
-        - Handle the player's dodge functionality
-    */
-    void HandleDodge() {
-        if (dodgeTimer >= dodgeDelay) {
-            dodgeDir = velocity.magnitude > 0.01f ? velocity.normalized : -lookDirection;
-
-            preDodgeVelocity = velocity;
-            velocity = Vector2.zero;
-            SetSpritesVisible(false);
-
-            // Calculate safe dodge distance up front
-            dodgeStartPos = rigidBody.position;
-            var playerCollider = GetComponent<Collider2D>();
-            playerCollider.enabled = false;
-            RaycastHit2D hit = Physics2D.Raycast(dodgeStartPos, dodgeDir, dodgeDistance);
-            playerCollider.enabled = true;
-            dodgeSafeDist = hit.collider != null ? hit.distance - 0.1f : dodgeDistance;
-            if (dodgeSafeDist < 0) dodgeSafeDist = 0;
-
-            invincible = true;
-            dodgeActiveTimer = dodgeDuration;
-            dodgeTimer = 0.0f;
-        }
-    }
-
-
-    /*
-        UpdateDodgeVisuals()
-        - Handle invincibility timer and restore state when dodge ends
-    */
-    void UpdateDodgeVisuals() {
-        if (dodgeActiveTimer > 0) {
-            dodgeActiveTimer -= Time.deltaTime;
-
-            if (dodgeActiveTimer <= 0) {
-                // Teleport player
-                if (dodgeSafeDist > 0) {
-                    Vector2 newPos = dodgeStartPos + dodgeDir * dodgeSafeDist;
-                    rigidBody.position = newPos;
-                    transform.position = newPos;
-                }
-
-                invincible = false;
-                velocity = preDodgeVelocity;
-                SetSpritesVisible(true);
-            }
-        }
-    }
-
-
-    void SetSpritesVisible(bool visible) {
-        foreach (var sr in spriteRenderers)
-            sr.enabled = visible;
-    }
-
-
-    public void TakeDamage(int damage) {
-        if (invincible) return;
-        health -= damage;
-        if (health <= 0) {
-            AudioSource.PlayClipAtPoint(sfxExplosion, transform.position);
-            Instantiate(explosionPrefab, transform.position, Quaternion.identity);
-            Destroy(gameObject);
-        }
-    }
-
-    public void UseStamina(int amount) {
-        stamina -= stamina;
-    }
-
-    /*
-        HandleShoot()
-        - Handle the player's shoot functionality
-    */
-    void HandleShoot() {
-        if (shootTimer >= shootDelay) {
-            shootTimer = 0.0f;
-            GameObject bulletObj = Instantiate(bulletPrefab);
-            Bullet bulletScript = bulletObj.GetComponent<Bullet>();
-            bulletScript.Launch(
-                bulletSpawnPoint.position,
-                lookDirection, 
-                15f,
-                Color.black,
-                gameObject
-            );
-        }
-    }
-   
 
     /*
         HandleAccel()
@@ -278,5 +167,156 @@ public class Player : MonoBehaviour {
             velocity.x = Mathf.MoveTowards(velocity.x, 0f, decelX);
             velocity.y = Mathf.MoveTowards(velocity.y, 0f, decelY);
         }
+    }
+
+
+    /*
+        HandleDodge()
+        - Handle the player's dodge functionality
+    */
+    void HandleDodge() {
+        if (dodgeTimer >= dodgeDelay) {
+            dodgeDir = velocity.magnitude > 0.01f ? velocity.normalized : -lookDirection;
+
+            preDodgeVelocity = velocity;
+            velocity = Vector2.zero;
+            SetSpritesVisible(false);
+
+            dodgeStartPos = rigidBody.position;
+            var playerCollider = GetComponent<Collider2D>();
+            playerCollider.enabled = false;
+            RaycastHit2D hit = Physics2D.Raycast(dodgeStartPos, dodgeDir, dodgeDistance);
+            playerCollider.enabled = true;
+            dodgeSafeDist = hit.collider != null ? hit.distance - 0.1f : dodgeDistance;
+            if (dodgeSafeDist < 0) dodgeSafeDist = 0;
+
+            invincible = true;
+            dodgeActiveTimer = dodgeDuration;
+            dodgeTimer = 0.0f;
+
+            SpawnAfterimages();
+
+            staminaRefillTimer = 0.0f;
+            stamina = Math.Max(0, stamina - 1);
+        }
+    }
+
+    /*
+        UpdateDodge()
+        - Handle invincibility timer and restore state when dodge ends
+    */
+    void UpdateDodge() {
+        if (dodgeActiveTimer > 0) {
+            dodgeActiveTimer -= Time.deltaTime;
+
+            if (dodgeActiveTimer <= 0) {
+                DestroyAfterimages();
+
+                if (dodgeSafeDist > 0) {
+                    Vector2 newPos = dodgeStartPos + dodgeDir * dodgeSafeDist;
+                    rigidBody.position = newPos;
+                    transform.position = newPos;
+                }
+
+                invincible = false;
+                velocity = preDodgeVelocity;
+                SetSpritesVisible(true);
+            }
+        }
+    }
+
+
+    void HandleBlock(bool block) {
+        bool active = block && stamina > 0;
+        shieldSprite.enabled = active;
+        shieldCollider.enabled = active;
+    }
+
+    void CheckShield() {
+        if (PlayerShield.hitCount > 0) {
+            stamina = Math.Max(0, stamina - PlayerShield.hitCount);
+            PlayerShield.hitCount = 0;
+            print($"Stamina: {stamina}");
+        }
+    }
+
+
+    /*
+        HandleShoot()
+        - Handle the player's shoot functionality
+    */
+    void HandleShoot() {
+        if (shootTimer >= shootDelay) {
+            shootTimer = 0.0f;
+            GameObject bulletObj = Instantiate(bulletPrefab);
+            Bullet bulletScript = bulletObj.GetComponent<Bullet>();
+            bulletScript.Launch(
+                bulletSpawnPoint.position,
+                lookDirection, 
+                30f,
+                Color.black,
+                gameObject
+            );
+        }
+    }
+
+
+    public void TakeDamage(int damage) {
+        if (invincible) return;
+        health -= damage;
+        if (health <= 0) {
+            AudioSource.PlayClipAtPoint(sfxExplosion, transform.position);
+            var explosion = Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+            Destroy(explosion, 3f);
+            Destroy(gameObject);
+        }
+    }
+
+    public void UseStamina(int amount) {
+        stamina -= stamina;
+    }
+
+    void RefillStamina() {
+        staminaRefillTimer += Time.deltaTime;
+        if (staminaRefillTimer >= staminaRefillDelay) {
+            stamina = Math.Min(3, stamina + 1);
+            staminaRefillTimer = 0.0f;
+        }
+    }
+
+    void SetSpritesVisible(bool visible) {
+        foreach (var sr in spriteRenderers)
+            sr.enabled = visible;
+    }
+
+    void SpawnAfterimages() {
+        if (bodySprite == null || bodySprite.sprite == null) return;
+
+        for (int i = 1; i <= afterimageCount; i++) {
+            float t = (float)i / (afterimageCount + 1);
+            Vector2 pos = dodgeStartPos + dodgeDir * dodgeSafeDist * t;
+
+            GameObject ghost = new("Afterimage");
+            ghost.transform.position = pos;
+            ghost.transform.rotation = Quaternion.Euler(0, 0, bodySprite.transform.eulerAngles.z);
+            ghost.transform.localScale = bodySprite.transform.lossyScale;
+
+            var sr = ghost.AddComponent<SpriteRenderer>();
+            sr.sprite = bodySprite.sprite;
+            sr.material = bodySprite.material;
+            sr.sortingLayerID = bodySprite.sortingLayerID;
+            sr.sortingOrder = bodySprite.sortingOrder;
+            Color c = bodySprite.color;
+            float alpha = Mathf.Lerp(0f, 0.75f, t);
+            sr.color = new Color(c.r, c.g, c.b, alpha);
+
+            afterimages.Add(ghost);
+        }
+    }
+
+    void DestroyAfterimages() {
+        foreach (var ghost in afterimages)
+            if (ghost != null) Destroy(ghost);
+        afterimages.Clear();
     }
 }

@@ -6,7 +6,6 @@ public class MapRenderer : MonoBehaviour {
     private PolygonCollider2D poly;
     private MeshFilter meshFilter;
 
-    // This runs automatically whenever you move a point on the collider
     void OnValidate() { GenerateMapMesh(); }
     void Start() { GenerateMapMesh(); }
 
