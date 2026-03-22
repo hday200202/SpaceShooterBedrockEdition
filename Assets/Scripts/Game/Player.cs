@@ -254,7 +254,7 @@ public class Player : MonoBehaviour {
                 bulletSpawnPoint.position,
                 lookDirection, 
                 30f,
-                Color.black,
+                Color.orange,
                 gameObject
             );
         }
