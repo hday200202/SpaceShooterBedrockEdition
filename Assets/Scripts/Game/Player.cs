@@ -52,13 +52,13 @@ public class Player : MonoBehaviour {
     private Vector2 lookDirection = Vector2.right;
     private readonly System.Collections.Generic.List<GameObject> afterimages = new();
 
+    [HideInInspector] public SpaceShooterInputActions inputActions;
     private SpaceShooterInputActions.StandardActions input;
     private Rigidbody2D rigidBody;
     private SpriteRenderer[] spriteRenderers = null;
 
-
     void Awake() {
-        var inputActions = new SpaceShooterInputActions();
+        inputActions = new SpaceShooterInputActions();
         input = inputActions.Standard;
         inputActions.Enable();
 
@@ -69,7 +69,6 @@ public class Player : MonoBehaviour {
     void Update() {
         HandleInput();
         UpdateLookDirection();
-        ApplyLookRotation();
         UpdateDodge();
         CheckShield();
         RefillStamina();
@@ -77,17 +76,9 @@ public class Player : MonoBehaviour {
 
     void FixedUpdate() {
         rigidBody.MovePosition(rigidBody.position + velocity * Time.fixedDeltaTime);
+        ApplyLookRotation();
     }
 
-
-    /*
-        HandleMovement():
-        - Get input values for this frame
-        - Handle Acceleration
-        - Handle Dodge
-        - Handle Shoot
-        - Move the player
-    */
     void HandleInput() {
         Vector2 inputDir = new(
             input.HorizontalMovement.ReadValue<float>(),
@@ -108,12 +99,6 @@ public class Player : MonoBehaviour {
         if (shoot && !dodge && !block) HandleShoot();
     }
 
-
-    /*
-        UpdateLookDirection()
-        - If controller stick input exists, use it as the look direction.
-        - Otherwise, calculate direction from player to mouse.
-    */
     void UpdateLookDirection() {
         Vector2 stickInput = input.Look.ReadValue<Vector2>();
 
@@ -130,10 +115,6 @@ public class Player : MonoBehaviour {
         }
     }
 
-    /*
-        ApplyLookRotation()
-        - Rotate the player to face the current look direction.
-    */
     void ApplyLookRotation() {
         float targetAngle = Mathf.Atan2(lookDirection.y, lookDirection.x) * Mathf.Rad2Deg;
         float currentAngle = rigidBody.rotation;
@@ -141,11 +122,6 @@ public class Player : MonoBehaviour {
         rigidBody.MoveRotation(newAngle);
     }
 
-
-    /*
-        HandleAccel()
-        - Handle player acceleration / decceleration
-    */
     void HandleAccel(Vector2 inputDir) {
         if (inputDir.magnitude > 0.01f) {
             velocity.x += inputDir.x * acceleration.x * Time.deltaTime;
@@ -164,11 +140,6 @@ public class Player : MonoBehaviour {
         }
     }
 
-
-    /*
-        HandleDodge()
-        - Handle the player's dodge functionality
-    */
     void HandleDodge() {
         if (dodgeTimer >= dodgeDelay) {
             dodgeDir = velocity.magnitude > 0.01f ? velocity.normalized : -lookDirection;
@@ -198,10 +169,6 @@ public class Player : MonoBehaviour {
         }
     }
 
-    /*
-        UpdateDodge()
-        - Handle invincibility timer and restore state when dodge ends
-    */
     void UpdateDodge() {
         if (dodgeActiveTimer > 0) {
             dodgeActiveTimer -= Time.deltaTime;
@@ -222,7 +189,6 @@ public class Player : MonoBehaviour {
         }
     }
 
-
     void HandleBlock(bool block) {
         bool active = block && stamina > 0;
         shieldSprite.enabled = active;
@@ -233,15 +199,9 @@ public class Player : MonoBehaviour {
         if (PlayerShield.hitCount > 0) {
             stamina = Math.Max(0, stamina - PlayerShield.hitCount);
             PlayerShield.hitCount = 0;
-            print($"Stamina: {stamina}");
         }
     }
 
-
-    /*
-        HandleShoot()
-        - Handle the player's shoot functionality
-    */
     void HandleShoot() {
         if (shootTimer >= shootDelay) {
             shootTimer = 0.0f;
@@ -256,7 +216,6 @@ public class Player : MonoBehaviour {
             );
         }
     }
-
 
     public void TakeDamage(int damage) {
         if (invincible) return;
@@ -306,7 +265,6 @@ public class Player : MonoBehaviour {
             spr.sortingOrder = bodySprite.sortingOrder;
             Color c = bodySprite.color;
 
-            // Fade in as afterimages approach player location after dodge
             float alpha = Mathf.Lerp(0f, 0.75f, t);
             spr.color = new Color(c.r, c.g, c.b, alpha);
 

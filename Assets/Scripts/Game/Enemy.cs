@@ -31,7 +31,6 @@ public class Enemy : MonoBehaviour {
     [Header("Effects")]
         public GameObject explosionPrefab;
 
-    // Private Members
     private float shootTimer;
     private float strafeDir = 1f;
     private float strafeTimer;
@@ -42,17 +41,13 @@ public class Enemy : MonoBehaviour {
     private SpriteRenderer[] spriteRenderers;
     private Transform target;
 
-
     void Awake() {
         rigidBody = GetComponent<Rigidbody2D>();
         spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
         shootTimer = shootDelay;
         strafeDir = Random.value > 0.5f ? 1f : -1f;
         strafeTimer = Random.Range(0f, strafeChangeInterval);
-
-        // Enemies start with a random hp value from 1-3
         hp = Random.Range(1, 4);
-
         UpdateBodyColor();
     }
 
@@ -60,7 +55,6 @@ public class Enemy : MonoBehaviour {
         var player = GameObject.FindWithTag("Player");
         if (player != null) target = player.transform;
     }
-
 
     void Update() {
         if (target == null) return;
@@ -73,15 +67,13 @@ public class Enemy : MonoBehaviour {
         }
 
         UpdateLookDirection();
-        ApplyLookRotation();
         HandleAI();
     }
 
-
     void FixedUpdate() {
         rigidBody.MovePosition(rigidBody.position + velocity * Time.fixedDeltaTime);
+        ApplyLookRotation();
     }
-
 
     bool CanSeeTarget() {
         Vector2 toTarget = (Vector2)target.position - (Vector2)transform.position;
@@ -102,14 +94,12 @@ public class Enemy : MonoBehaviour {
         return true;
     }
 
-
     void UpdateLookDirection() {
         if (target == null) return;
         Vector2 toTarget = (Vector2)target.position - (Vector2)transform.position;
         if (toTarget.magnitude > 0.01f)
             lookDirection = toTarget.normalized;
     }
-
 
     void ApplyLookRotation() {
         float targetAngle = Mathf.Atan2(lookDirection.y, lookDirection.x) * Mathf.Rad2Deg;
@@ -118,13 +108,11 @@ public class Enemy : MonoBehaviour {
         rigidBody.MoveRotation(newAngle);
     }
 
-
     void HandleAI() {
         Vector2 toTarget = (Vector2)target.position - (Vector2)transform.position;
         float distToTarget = toTarget.magnitude;
         Vector2 toTargetDir = toTarget.normalized;
 
-        // Strafe direction flips on a timer
         strafeTimer -= Time.deltaTime;
         if (strafeTimer <= 0) {
             strafeDir = -strafeDir;
@@ -136,10 +124,8 @@ public class Enemy : MonoBehaviour {
         Vector2 inputDir = Vector2.zero;
         if (distToTarget > preferredRange + 0.5f)
             inputDir = toTargetDir + strafeVec * 0.4f;
-
         else if (distToTarget < preferredRange - 0.5f)
             inputDir = -toTargetDir + strafeVec * 0.4f;
-
         else
             inputDir = strafeVec;
 
@@ -149,12 +135,10 @@ public class Enemy : MonoBehaviour {
             HandleShoot();
     }
 
-
     void SetSpritesVisible(bool visible) {
         foreach (var sr in spriteRenderers)
             sr.enabled = visible;
     }
-
 
     public void TakeDamage(int damage) {
         hp -= damage;
@@ -167,7 +151,6 @@ public class Enemy : MonoBehaviour {
         else UpdateBodyColor();
     }
 
-
     void UpdateBodyColor() {
         if (bodySprite == null) return;
         bodySprite.color = hp switch {
@@ -176,7 +159,6 @@ public class Enemy : MonoBehaviour {
             _ => Color.red
         };
     }
-
 
     void HandleShoot() {
         if (shootTimer >= shootDelay) {
@@ -192,7 +174,6 @@ public class Enemy : MonoBehaviour {
             );
         }
     }
-
 
     void HandleAccel(Vector2 inputDir) {
         if (inputDir.magnitude > 0.01f) {
@@ -212,9 +193,6 @@ public class Enemy : MonoBehaviour {
         }
     }
 
-    /*
-        Show aggro range in editor
-    */
     void OnDrawGizmosSelected() {
         Gizmos.color = Color.white;
         Gizmos.DrawWireSphere(transform.position, awarenessRange);

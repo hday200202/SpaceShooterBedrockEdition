@@ -7,6 +7,9 @@ public class Bullet : MonoBehaviour {
 
     [Header("Settings")]
         public float knockBack = 10;
+        public float maxLifetime = 5f;
+
+    private static AudioSource sharedAudio;
 
     private Vector2 direction;
     private float speed;
@@ -16,7 +19,6 @@ public class Bullet : MonoBehaviour {
     private bool bounce;
     private int bouncesRemaining;
     private float spawnTime;
-
 
     public void Launch(
         Vector2 start, 
@@ -44,21 +46,50 @@ public class Bullet : MonoBehaviour {
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
         rb.linearVelocity = direction * speed;
 
-        AudioSource.PlayClipAtPoint(sfxFire, transform.position);
+        PlaySound(sfxFire);
 
         if (TryGetComponent<SpriteRenderer>(out var spriteRenderer))
             spriteRenderer.color = color;
     }
 
+    void FixedUpdate() {
+        if (Time.time - spawnTime > maxLifetime) {
+            Destroy(gameObject);
+            return;
+        }
+
+        if (rb.linearVelocity.magnitude > 0.1f)
+            direction = rb.linearVelocity.normalized;
+
+        float dist = rb.linearVelocity.magnitude * Time.fixedDeltaTime;
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, dist);
+
+        if (hit.collider != null
+            && hit.collider != col
+            && hit.collider.GetComponent<Player>() == null
+            && hit.collider.GetComponent<Enemy>() == null
+            && hit.collider.GetComponent<Boss>() == null
+            && hit.collider.GetComponent<Bullet>() == null
+            && hit.collider.GetComponent<PlayerShield>() == null) {
+
+            if (bounce && bouncesRemaining > 0) {
+                bouncesRemaining--;
+                direction = Vector2.Reflect(direction, hit.normal);
+                rb.linearVelocity = direction * speed;
+                transform.position = hit.point + hit.normal * 0.1f;
+            } else {
+                PlaySound(sfxHit);
+                Destroy(gameObject);
+            }
+        }
+    }
 
     void OnTriggerEnter2D(Collider2D other) {
         if (Time.time - spawnTime < 0.05f) return;
-
         if (other.gameObject == parent) return;
         if (other.GetComponent<Bullet>() != null) return;
 
         bool parentIsEnemy = parent != null && (parent.GetComponent<Enemy>() != null || parent.GetComponent<Boss>() != null);
-
         if (parentIsEnemy && (other.GetComponent<Enemy>() != null || other.GetComponent<Boss>() != null)) return;
 
         if (HandleShieldHit(other)) return;
@@ -75,14 +106,13 @@ public class Bullet : MonoBehaviour {
             transform.position += (Vector3)(normal * 0.1f);
             return;
         }
-        AudioSource.PlayClipAtPoint(sfxHit, transform.position);
+        PlaySound(sfxHit);
         Destroy(gameObject);
     }
 
     bool HandleShieldHit(Collider2D other) {
         var playerShield = other.GetComponent<PlayerShield>();
         if (playerShield == null) return false;
-
         if (parent != null && parent.GetComponent<Player>() != null) return false;
 
         PlayerShield.hitCount++;
@@ -102,7 +132,7 @@ public class Bullet : MonoBehaviour {
 
         player.TakeDamage(1);
         player.velocity -= direction * -knockBack;
-        AudioSource.PlayClipAtPoint(sfxHit, transform.position);
+        PlaySound(sfxHit);
         Destroy(gameObject);
         return true;
     }
@@ -113,7 +143,7 @@ public class Bullet : MonoBehaviour {
 
         enemy.TakeDamage(1);
         enemy.velocity -= direction * -knockBack;
-        AudioSource.PlayClipAtPoint(sfxHit, transform.position);
+        PlaySound(sfxHit);
         Destroy(gameObject);
         return true;
     }
@@ -122,8 +152,22 @@ public class Bullet : MonoBehaviour {
         var boss = other.GetComponent<Boss>();
         if (boss == null) return false;
 
-        AudioSource.PlayClipAtPoint(sfxHit, transform.position);
+        boss.TakeDamage(1);
+        PlaySound(sfxHit);
         Destroy(gameObject);
         return true;
+    }
+
+    static void PlaySound(AudioClip clip) {
+        if (clip == null) return;
+        if (sharedAudio == null) {
+            var go = new GameObject("BulletAudio");
+            DontDestroyOnLoad(go);
+            sharedAudio = go.AddComponent<AudioSource>();
+            sharedAudio.spatialBlend = 0f;
+            sharedAudio.volume = 0.3f;
+        }
+        sharedAudio.clip = clip;
+        sharedAudio.Play();
     }
 }
