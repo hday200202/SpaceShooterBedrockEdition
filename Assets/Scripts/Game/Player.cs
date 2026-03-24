@@ -5,59 +5,56 @@ using UnityEngine.U2D;
 
 public class Player : MonoBehaviour {
     [Header("Bullet Settings")]
-        public GameObject bulletPrefab;
-        public Transform bulletSpawnPoint;
+        public GameObject bulletPrefab      = null;
+        public Transform bulletSpawnPoint   = null;
 
     [Header("Movement Settings")]
-        public float maxSpeed = 5.0f;
-        public Vector2 acceleration = new(40f, 40f);
-        public float rotationSpeed = 1500f;
-        public Vector2 velocity;
+        public float maxSpeed               = 5.0f;
+        public Vector2 acceleration         = new(40f, 40f);
+        public float rotationSpeed          = 1500f;
+        public Vector2 velocity             = Vector2.zero;
 
     [Header("Dodge Settings")]
-        public float dodgeDelay = 0.5f;
-        public float dodgeDuration = 0.3f;
-        public float dodgeDistance = 3.0f;
-        public bool invincible = false;
-        public int afterimageCount = 6;
-        public float afterimageFadeDuration = 1.5f;
+        public float dodgeDelay             = 0.5f;
+        public float dodgeDuration          = 0.3f;
+        public float dodgeDistance          = 3.0f;
+        public bool invincible              = false;
+        public int afterimageCount          = 6;
 
     [Header("Shoot Settings")]
-        public float shootDelay = 0.1f;
+        public float shootDelay             = 0.1f;
 
     [Header("Health / Stamina")]
-        public int health = 3;
-        public int stamina = 3;
-        public float staminaRefillDelay = 1.0f;
-        public SpriteRenderer bodySprite;
+        public int health                   = 3;
+        public int stamina                  = 3;
+        public float staminaRefillDelay     = 1.0f;
+        public SpriteRenderer bodySprite    = null;
 
     [Header("Shield")]
-        public SpriteShapeRenderer shieldSprite;
-        public PolygonCollider2D shieldCollider;
+        public SpriteShapeRenderer shieldSprite = null;
+        public PolygonCollider2D shieldCollider = null;
 
     [Header("Audio")]
-        public AudioClip sfxExplosion;
+        public AudioClip sfxExplosion       = null;
 
     [Header("Effects")]
-        public GameObject explosionPrefab;
+        public GameObject explosionPrefab   = null;
 
-    private float dodgeTimer = 0.5f;
-    private float dodgeActiveTimer = 0.0f;
-    private float staminaRefillTimer = 0.0f;
-    private float shootTimer = 0.1f;
-    private Vector2 preDodgeVelocity;
-    private Vector2 dodgeDir;
-    private Vector2 dodgeStartPos;
-    private float dodgeSafeDist;
+    private float dodgeTimer                = 0.5f;
+    private float dodgeActiveTimer          = 0.0f;
+    private float staminaRefillTimer        = 0.0f;
+    private float shootTimer                = 0.1f;
+    private Vector2 preDodgeVelocity        = Vector2.zero;
+    private Vector2 dodgeDir                = Vector2.zero;
+    private Vector2 dodgeStartPos           = Vector2.zero;
+    private float dodgeSafeDist             = 0.0f;
 
     private Vector2 lookDirection = Vector2.right;
     private readonly System.Collections.Generic.List<GameObject> afterimages = new();
 
     private SpaceShooterInputActions.StandardActions input;
     private Rigidbody2D rigidBody;
-    private SpriteRenderer[] spriteRenderers;
-    private PlayerShield shield;
-    private AudioSource audioSource;
+    private SpriteRenderer[] spriteRenderers = null;
 
 
     void Awake() {
@@ -67,8 +64,6 @@ public class Player : MonoBehaviour {
 
         rigidBody = GetComponent<Rigidbody2D>();
         spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
-        shield = GetComponentInChildren<PlayerShield>();
-        audioSource = GetComponent<AudioSource>();
     }
 
     void Update() {
@@ -184,9 +179,11 @@ public class Player : MonoBehaviour {
 
             dodgeStartPos = rigidBody.position;
             var playerCollider = GetComponent<Collider2D>();
+
             playerCollider.enabled = false;
             RaycastHit2D hit = Physics2D.Raycast(dodgeStartPos, dodgeDir, dodgeDistance);
             playerCollider.enabled = true;
+
             dodgeSafeDist = hit.collider != null ? hit.distance - 0.1f : dodgeDistance;
             if (dodgeSafeDist < 0) dodgeSafeDist = 0;
 
@@ -273,7 +270,7 @@ public class Player : MonoBehaviour {
     }
 
     public void UseStamina(int amount) {
-        stamina -= stamina;
+        stamina -= amount;
     }
 
     void RefillStamina() {
@@ -285,8 +282,8 @@ public class Player : MonoBehaviour {
     }
 
     void SetSpritesVisible(bool visible) {
-        foreach (var sr in spriteRenderers)
-            sr.enabled = visible;
+        foreach (var spr in spriteRenderers)
+            spr.enabled = visible;
     }
 
     void SpawnAfterimages() {
@@ -297,18 +294,21 @@ public class Player : MonoBehaviour {
             Vector2 pos = dodgeStartPos + dodgeDir * dodgeSafeDist * t;
 
             GameObject ghost = new("Afterimage");
-            ghost.transform.position = pos;
-            ghost.transform.rotation = Quaternion.Euler(0, 0, bodySprite.transform.eulerAngles.z);
+            ghost.transform.SetPositionAndRotation(
+                pos, Quaternion.Euler(0, 0, bodySprite.transform.eulerAngles.z)
+            );
             ghost.transform.localScale = bodySprite.transform.lossyScale;
 
-            var sr = ghost.AddComponent<SpriteRenderer>();
-            sr.sprite = bodySprite.sprite;
-            sr.material = bodySprite.material;
-            sr.sortingLayerID = bodySprite.sortingLayerID;
-            sr.sortingOrder = bodySprite.sortingOrder;
+            var spr = ghost.AddComponent<SpriteRenderer>();
+            spr.sprite = bodySprite.sprite;
+            spr.material = bodySprite.material;
+            spr.sortingLayerID = bodySprite.sortingLayerID;
+            spr.sortingOrder = bodySprite.sortingOrder;
             Color c = bodySprite.color;
+
+            // Fade in as afterimages approach player location after dodge
             float alpha = Mathf.Lerp(0f, 0.75f, t);
-            sr.color = new Color(c.r, c.g, c.b, alpha);
+            spr.color = new Color(c.r, c.g, c.b, alpha);
 
             afterimages.Add(ghost);
         }

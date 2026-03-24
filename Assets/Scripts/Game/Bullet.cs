@@ -12,8 +12,10 @@ public class Bullet : MonoBehaviour {
     private float speed;
     private GameObject parent;
     private Collider2D col;
+    private Rigidbody2D rb;
     private bool bounce;
     private int bouncesRemaining;
+    private float spawnTime;
 
 
     public void Launch(
@@ -30,8 +32,17 @@ public class Bullet : MonoBehaviour {
         transform.position = start;
         direction = dir.normalized;
         this.speed = speed;
+        spawnTime = Time.time;
 
         col = GetComponent<Collider2D>();
+
+        rb = GetComponent<Rigidbody2D>();
+        if (rb == null)
+            rb = gameObject.AddComponent<Rigidbody2D>();
+        rb.bodyType = RigidbodyType2D.Dynamic;
+        rb.gravityScale = 0;
+        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+        rb.linearVelocity = direction * speed;
 
         AudioSource.PlayClipAtPoint(sfxFire, transform.position);
 
@@ -40,56 +51,30 @@ public class Bullet : MonoBehaviour {
     }
 
 
-    void Update() {
-        float moveDistance = speed * Time.deltaTime;
-        if (CheckWallCollision(moveDistance)) return;
-
-        transform.position += (Vector3)(moveDistance * direction);
-    }
-
-    bool CheckWallCollision(float moveDistance) {
-        col.enabled = false;
-        Collider2D parentCol = parent != null ? parent.GetComponent<Collider2D>() : null;
-        if (parentCol != null) parentCol.enabled = false;
-
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, moveDistance);
-
-        col.enabled = true;
-        if (parentCol != null) parentCol.enabled = true;
-
-        if (hit.collider != null
-            && hit.collider.GetComponent<Player>() == null
-            && hit.collider.GetComponent<Enemy>() == null
-            && hit.collider.GetComponent<PlayerShield>() == null
-            && hit.collider.GetComponent<Bullet>() == null) {
-            if (bounce && bouncesRemaining > 0) {
-                bouncesRemaining--;
-                direction = Vector2.Reflect(direction, hit.normal);
-                transform.position = hit.point + hit.normal * 0.01f;
-                return true;
-            }
-            AudioSource.PlayClipAtPoint(sfxHit, hit.point);
-            Destroy(gameObject);
-            return true;
-        }
-
-        return false;
-    }
-
-
     void OnTriggerEnter2D(Collider2D other) {
+        if (Time.time - spawnTime < 0.05f) return;
+
         if (other.gameObject == parent) return;
         if (other.GetComponent<Bullet>() != null) return;
 
-        bool parentIsEnemy = parent != null && parent.GetComponent<Enemy>() != null;
+        bool parentIsEnemy = parent != null && (parent.GetComponent<Enemy>() != null || parent.GetComponent<Boss>() != null);
 
-        // Enemy bullets pass through other enemies
-        if (parentIsEnemy && other.GetComponent<Enemy>() != null) return;
+        if (parentIsEnemy && (other.GetComponent<Enemy>() != null || other.GetComponent<Boss>() != null)) return;
 
         if (HandleShieldHit(other)) return;
         if (HandlePlayerHit(other)) return;
         if (HandleEnemyHit(other)) return;
+        if (HandleBossHit(other)) return;
 
+        if (bounce && bouncesRemaining > 0) {
+            bouncesRemaining--;
+            Vector2 closestPoint = other.ClosestPoint(transform.position);
+            Vector2 normal = ((Vector2)transform.position - closestPoint).normalized;
+            direction = Vector2.Reflect(direction, normal);
+            rb.linearVelocity = direction * speed;
+            transform.position += (Vector3)(normal * 0.1f);
+            return;
+        }
         AudioSource.PlayClipAtPoint(sfxHit, transform.position);
         Destroy(gameObject);
     }
@@ -98,13 +83,13 @@ public class Bullet : MonoBehaviour {
         var playerShield = other.GetComponent<PlayerShield>();
         if (playerShield == null) return false;
 
-        // Player's own bullets pass through the shield
         if (parent != null && parent.GetComponent<Player>() != null) return false;
 
         PlayerShield.hitCount++;
 
         Vector2 normal = ((Vector2)(transform.position - other.transform.position)).normalized;
         direction = Vector2.Reflect(direction, normal);
+        rb.linearVelocity = direction * speed;
         transform.position += (Vector3)(normal * 0.1f);
         parent = other.gameObject;
         return true;
@@ -128,6 +113,15 @@ public class Bullet : MonoBehaviour {
 
         enemy.TakeDamage(1);
         enemy.velocity -= direction * -knockBack;
+        AudioSource.PlayClipAtPoint(sfxHit, transform.position);
+        Destroy(gameObject);
+        return true;
+    }
+
+    bool HandleBossHit(Collider2D other) {
+        var boss = other.GetComponent<Boss>();
+        if (boss == null) return false;
+
         AudioSource.PlayClipAtPoint(sfxHit, transform.position);
         Destroy(gameObject);
         return true;
